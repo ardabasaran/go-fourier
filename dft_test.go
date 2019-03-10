@@ -77,6 +77,66 @@ func TestDFTInverse2Radix1DReal(t *testing.T) {
 	}
 }
 
+func TestDFTInverse2Radix2DReal(t *testing.T) {
+	for _, test := range tests {
+		n := 1024
+		test2d := make([][]complex128, n)
+		for i := 0; i < n; i++ {
+			test2d[i] = make([]complex128, len(test.input))
+			for j := 0; j < len(test.input); j++ {
+				test2d[i][j] = complex(test.input[j], 0.0)
+			}
+		}
+		DFTInverse2Radix2DReal(&test2d)
+	}
+}
+
+func TestDFT2Radix2DReal(t *testing.T) {
+	for _, test := range tests {
+		n := 1024
+		test2d := make([][]float64, n)
+		for i := 0; i < n; i++ {
+			test2d[i] = make([]float64, len(test.input))
+			copy(test2d[i],test.input)
+		}
+		transformed, _ := DFT2Radix2DReal(test2d)
+		DFTInverse2Radix2D(&transformed)
+		for i := 0; i < len(test.input); i++ {
+			for j := 0; j < len(test.input); j++ {
+				imagDiffSq := (imag(transformed[i][j]) - 0) * (imag(transformed[i][j]) - 0)
+				realDiffSq := (real(transformed[i][j]) - test2d[i][j]) * (real(transformed[i][j]) - test2d[i][j])
+				sqrtDiff := math.Sqrt(imagDiffSq + realDiffSq)
+				if sqrtDiff > 1e-2 {
+					t.Errorf("Difference of %v and %v is %v", transformed[i][j], test2d[i][j], sqrtDiff)
+				}
+			}
+		}
+	}
+}
+
+func TestDFTNaive2DReal(t *testing.T) {
+	for _, test := range tests {
+		n := 1024
+		test2d := make([][]float64, n)
+		for i := 0; i < n; i++ {
+			test2d[i] = make([]float64, len(test.input))
+			copy(test2d[i],test.input)
+		}
+		transformed, _ := DFTNaive2DReal(test2d)
+		DFTInverseNaive2D(&transformed)
+		for i := 0; i < len(test.input); i++ {
+			for j := 0; j < len(test.input); j++ {
+				imagDiffSq := (imag(transformed[i][j]) - 0) * (imag(transformed[i][j]) - 0)
+				realDiffSq := (real(transformed[i][j]) - test2d[i][j]) * (real(transformed[i][j]) - test2d[i][j])
+				sqrtDiff := math.Sqrt(imagDiffSq + realDiffSq)
+				if sqrtDiff > 1e-2 {
+					t.Errorf("Difference of %v and %v is %v", transformed[i][j], test2d[i][j], sqrtDiff)
+				}
+			}
+		}
+	}
+}
+
 func BenchmarkDFTNaive1DReal(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		DFTNaive1DReal(tests[0].input)
@@ -108,6 +168,33 @@ func BenchmarkDFT2Radix2D(b *testing.B) {
 	for i := 0; i < n; i++ {
 		test2d[i] = make([]float64, 1024)
 		copy(test2d[i],tests[0].input)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		DFT2Radix2DReal(test2d)
+	}
+}
+
+func BenchmarkDFTInverse2Radix2D(b *testing.B) {
+	n := 1024
+	test2d := make([][]float64, n)
+	for i := 0; i < n; i++ {
+		test2d[i] = make([]float64, 1024)
+		copy(test2d[i],tests[0].input)
+	}
+	result, _ := DFT2Radix2DReal(test2d)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		DFTInverse2Radix2DReal(&result)
+	}
+}
+
+func BenchmarkDFT2Radix22(b *testing.B) {
+	n := 4
+	test2d := make([][]float64, n)
+	for i := 0; i < n; i++ {
+		test2d[i] = make([]float64, 4)
+		copy(test2d[i],tests[1].input)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

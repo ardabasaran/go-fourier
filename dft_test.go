@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-var tests = []struct {
+var testsDFT = []struct {
 	input  []float64
 	output []complex128
 }{
@@ -21,7 +21,7 @@ var tests = []struct {
 }
 
 func TestDFTNaive1DReal(t *testing.T) {
-	for _, test := range tests {
+	for _, test := range testsDFT {
 		actual, _ := DFTNaive1DReal(test.input)
 		expected := test.output
 		for i, c := range expected {
@@ -36,7 +36,7 @@ func TestDFTNaive1DReal(t *testing.T) {
 }
 
 func TestDFTInverseNaive1DReal(t *testing.T) {
-	for _, test := range tests {
+	for _, test := range testsDFT {
 		actual, _ := DFTInverseNaive1DReal(test.output)
 		expected := test.input
 		for i, c := range expected {
@@ -50,7 +50,7 @@ func TestDFTInverseNaive1DReal(t *testing.T) {
 }
 
 func TestDFTNaive2DReal(t *testing.T) {
-	for _, test := range tests {
+	for _, test := range testsDFT {
 		n := 32
 		test2d := make([][]float64, n)
 		for i := 0; i < n; i++ {
@@ -58,7 +58,7 @@ func TestDFTNaive2DReal(t *testing.T) {
 			copy(test2d[i], test.input)
 		}
 		transformed, _ := DFTNaive2DReal(test2d)
-		DFTInverseNaive2D(&transformed)
+		DFTInverseNaive2D(transformed)
 		for i := 0; i < n; i++ {
 			for j := 0; j < len(test.input); j++ {
 				imagDiffSq := (imag(transformed[i][j]) - 0) * (imag(transformed[i][j]) - 0)
@@ -73,19 +73,19 @@ func TestDFTNaive2DReal(t *testing.T) {
 }
 
 func TestDFTInverseNaive2DReal(t *testing.T) {
-	customTests := make([][][]float64, 10)
+	customtestsDFT := make([][][]float64, 10)
 	for n := 0; n < 10; n++ {
-		customTests[n] = make([][]float64, 32)
+		customtestsDFT[n] = make([][]float64, 32)
 		for i := 0; i < 32; i++ {
-			customTests[n][i] = make([]float64, 32)
+			customtestsDFT[n][i] = make([]float64, 32)
 			for j := 0; j < 32; j++ {
-				customTests[n][i][j] = rand.Float64()
+				customtestsDFT[n][i][j] = rand.Float64()
 			}
 		}
 	}
-	for _, test2d := range customTests {
+	for _, test2d := range customtestsDFT {
 		transformed, _ := DFT2Radix2DReal(test2d)
-		DFTInverse2Radix2D(&transformed)
+		DFTInverse2Radix2D(transformed)
 		for i := 0; i < 32; i++ {
 			for j := 0; j < 32; j++ {
 				imagDiffSq := (imag(transformed[i][j]) - 0) * (imag(transformed[i][j]) - 0)
@@ -100,7 +100,7 @@ func TestDFTInverseNaive2DReal(t *testing.T) {
 }
 
 func TestDFT2Radix1DReal(t *testing.T) {
-	for _, test := range tests {
+	for _, test := range testsDFT {
 		actual, _ := DFT2Radix1DReal(test.input)
 		expected := test.output
 		for i, c := range expected {
@@ -115,7 +115,7 @@ func TestDFT2Radix1DReal(t *testing.T) {
 }
 
 func TestDFTInverse2Radix1DReal(t *testing.T) {
-	for _, test := range tests {
+	for _, test := range testsDFT {
 		actual, _ := DFTInverse2Radix1DReal(test.output)
 		expected := test.input
 		for i, c := range expected {
@@ -129,7 +129,7 @@ func TestDFTInverse2Radix1DReal(t *testing.T) {
 }
 
 func TestDFT2Radix2DReal(t *testing.T) {
-	for _, test := range tests {
+	for _, test := range testsDFT {
 		n := 1024
 		test2d := make([][]float64, n)
 		for i := 0; i < n; i++ {
@@ -137,7 +137,7 @@ func TestDFT2Radix2DReal(t *testing.T) {
 			copy(test2d[i], test.input)
 		}
 		transformed, _ := DFT2Radix2DReal(test2d)
-		DFTInverse2Radix2D(&transformed)
+		DFTInverse2Radix2D(transformed)
 		for i := 0; i < n; i++ {
 			for j := 0; j < len(test.input); j++ {
 				imagDiffSq := (imag(transformed[i][j]) - 0) * (imag(transformed[i][j]) - 0)
@@ -152,19 +152,19 @@ func TestDFT2Radix2DReal(t *testing.T) {
 }
 
 func TestDFTInverse2Radix2DReal(t *testing.T) {
-	customTests := make([][][]float64, 10)
+	customtestsDFT := make([][][]float64, 10)
 	for n := 0; n < 10; n++ {
-		customTests[n] = make([][]float64, 32)
+		customtestsDFT[n] = make([][]float64, 32)
 		for i := 0; i < 32; i++ {
-			customTests[n][i] = make([]float64, 32)
+			customtestsDFT[n][i] = make([]float64, 32)
 			for j := 0; j < 32; j++ {
-				customTests[n][i][j] = rand.Float64()
+				customtestsDFT[n][i][j] = rand.Float64()
 			}
 		}
 	}
-	for _, test2d := range customTests {
+	for _, test2d := range customtestsDFT {
 		transformed, _ := DFT2Radix2DReal(test2d)
-		DFTInverse2Radix2D(&transformed)
+		DFTInverse2Radix2D(transformed)
 		for i := 0; i < 32; i++ {
 			for j := 0; j < 32; j++ {
 				imagDiffSq := (imag(transformed[i][j]) - 0) * (imag(transformed[i][j]) - 0)
@@ -180,14 +180,14 @@ func TestDFTInverse2Radix2DReal(t *testing.T) {
 
 func BenchmarkDFTNaive1DReal(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		DFTNaive1DReal(tests[0].input)
+		DFTNaive1DReal(testsDFT[0].input)
 	}
 }
 
 func BenchmarkDFTInverseNaive1DReal(b *testing.B) {
 	complexTest := make([]complex128, 1024)
 	for i := 0; i < 1024; i++ {
-		complexTest[i] = complex(tests[0].input[i], 0.0)
+		complexTest[i] = complex(testsDFT[0].input[i], 0.0)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -197,14 +197,14 @@ func BenchmarkDFTInverseNaive1DReal(b *testing.B) {
 
 func BenchmarkDFT2Radix1DReal(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		DFT2Radix1DReal(tests[0].input)
+		DFT2Radix1DReal(testsDFT[0].input)
 	}
 }
 
 func BenchmarkDFTInverse2Radix1DReal(b *testing.B) {
 	complexTest := make([]complex128, 1024)
 	for i := 0; i < 1024; i++ {
-		complexTest[i] = complex(tests[0].input[i], 0.0)
+		complexTest[i] = complex(testsDFT[0].input[i], 0.0)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -217,7 +217,7 @@ func BenchmarkDFTNaive2DReal(b *testing.B) {
 	test2d := make([][]float64, n)
 	for i := 0; i < n; i++ {
 		test2d[i] = make([]float64, 1024)
-		copy(test2d[i], tests[0].input)
+		copy(test2d[i], testsDFT[0].input)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -230,7 +230,7 @@ func BenchmarkDFTInverseNaive2DReal(b *testing.B) {
 	test2d := make([][]float64, n)
 	for i := 0; i < n; i++ {
 		test2d[i] = make([]float64, 1024)
-		copy(test2d[i], tests[0].input)
+		copy(test2d[i], testsDFT[0].input)
 	}
 	result, _ := DFT2Radix2DReal(test2d)
 	b.ResetTimer()
@@ -244,7 +244,7 @@ func BenchmarkDFT2Radix2DReal(b *testing.B) {
 	test2d := make([][]float64, n)
 	for i := 0; i < n; i++ {
 		test2d[i] = make([]float64, 1024)
-		copy(test2d[i], tests[0].input)
+		copy(test2d[i], testsDFT[0].input)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -257,7 +257,7 @@ func BenchmarkDFT2Radix2DRealSmall(b *testing.B) {
 	test2d := make([][]float64, n)
 	for i := 0; i < n; i++ {
 		test2d[i] = make([]float64, 4)
-		copy(test2d[i], tests[1].input)
+		copy(test2d[i], testsDFT[1].input)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -270,7 +270,7 @@ func BenchmarkDFTInverse2Radix2DReal(b *testing.B) {
 	test2d := make([][]float64, n)
 	for i := 0; i < n; i++ {
 		test2d[i] = make([]float64, 1024)
-		copy(test2d[i], tests[0].input)
+		copy(test2d[i], testsDFT[0].input)
 	}
 	result, _ := DFT2Radix2DReal(test2d)
 	b.ResetTimer()
@@ -284,7 +284,7 @@ func BenchmarkDFTInverse2Radix2DRealSmall(b *testing.B) {
 	test2d := make([][]float64, n)
 	for i := 0; i < n; i++ {
 		test2d[i] = make([]float64, 1024)
-		copy(test2d[i], tests[1].input)
+		copy(test2d[i], testsDFT[1].input)
 	}
 	result, _ := DFT2Radix2DReal(test2d)
 	b.ResetTimer()

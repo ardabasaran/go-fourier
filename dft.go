@@ -14,14 +14,14 @@ const N_WORKERS = 8
 // Returns the result in complex number space.
 func DFT2Radix1D(signalsPtr *[]complex128) error {
 	signals := *signalsPtr
-	if len(signals)  == 0 {
+	if len(signals) == 0 {
 		return errors.New("DFT2Radix1D: Input array must have size at least one")
 	}
 	if bits.OnesCount32(uint32(len(signals))) != 1 {
 		return errors.New("DFT2Radix1D: Input array must have size a power of two")
 	}
 	length := uint32(len(signals))
-	numBits := uint32(32-(bits.LeadingZeros32(length)+1))
+	numBits := uint32(32 - (bits.LeadingZeros32(length) + 1))
 	shift := 32 - numBits
 
 	// Bit reversal
@@ -37,10 +37,10 @@ func DFT2Radix1D(signalsPtr *[]complex128) error {
 		halfWindow := window / 2
 		for start := uint32(0); start < length; start += window {
 			k := uint32(0)
-			for first := start; first < start + halfWindow; first++ {
+			for first := start; first < start+halfWindow; first++ {
 				second := first + halfWindow
-				w := complex(math.Cos(float64(-2) * float64(k)* math.Pi / float64(window)),
-					math.Sin(float64(-2) * float64(k)* math.Pi / float64(window)))
+				w := complex(math.Cos(float64(-2)*float64(k)*math.Pi/float64(window)),
+					math.Sin(float64(-2)*float64(k)*math.Pi/float64(window)))
 				term := w * signals[second]
 				signals[second] = signals[first] - term
 				signals[first] = signals[first] + term
@@ -58,14 +58,14 @@ func DFT2Radix1D(signalsPtr *[]complex128) error {
 // Returns the result in complex number space.
 func DFTInverse2Radix1D(signalsPtr *[]complex128) error {
 	signals := *signalsPtr
-	if len(signals)  == 0 {
+	if len(signals) == 0 {
 		return errors.New("DFT2Radix1D: Input array must have size at least one")
 	}
 	if bits.OnesCount32(uint32(len(signals))) != 1 {
 		return errors.New("DFT2Radix1D: Input array must have size a power of two")
 	}
 	for i := 0; i < len(signals); i++ {
-		signals[i] = complex(imag(signals[i]),real(signals[i]))
+		signals[i] = complex(imag(signals[i]), real(signals[i]))
 	}
 	err := DFT2Radix1D(signalsPtr)
 	N := float64(len(signals))
@@ -99,7 +99,7 @@ func DFTInverse2Radix2D(signalsPtr *[][]complex128) error {
 // Returns the result in complex number space.
 func DFTNaive1D(signalsPtr *[]complex128) error {
 	signals := *signalsPtr
-	if len(signals)  == 0 {
+	if len(signals) == 0 {
 		return errors.New("DFTNaive1D: Input array must have size at least one")
 	}
 	result := make([]complex128, len(signals))
@@ -121,7 +121,7 @@ func DFTNaive1D(signalsPtr *[]complex128) error {
 // Returns the result in complex number space.
 func DFTInverseNaive1D(signalsPtr *[]complex128) error {
 	signals := *signalsPtr
-	if len(signals)  == 0 {
+	if len(signals) == 0 {
 		return errors.New("DFTInverseNaive1D: Input array must have size at least one")
 	}
 	result := make([]complex128, len(signals))
@@ -184,7 +184,7 @@ func DFT2Radix2DReal(signals [][]float64) ([][]complex128, error) {
 	for i, signal := range signals {
 		complexSignals[i] = make([]complex128, len(signal))
 		for j, num := range signal {
-			complexSignals[i][j] = complex(num,0.0)
+			complexSignals[i][j] = complex(num, 0.0)
 		}
 	}
 	err := DFT2Radix2D(&complexSignals)
@@ -243,7 +243,7 @@ func DFTNaive2DReal(signals [][]float64) ([][]complex128, error) {
 	for i, signal := range signals {
 		complexSignals[i] = make([]complex128, len(signal))
 		for j, num := range signal {
-			complexSignals[i][j] = complex(num,0.0)
+			complexSignals[i][j] = complex(num, 0.0)
 		}
 	}
 	err := DFTNaive2D(&complexSignals)

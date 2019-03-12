@@ -1,13 +1,23 @@
 package go_fourier
 
 import (
+	"errors"
 	"math"
+	"math/bits"
 	"math/cmplx"
 )
 
-
-
+// DCT1D computes the discrete cosine transform of the given array in the complex number space.
+// Assumes the length of the array is a power of 2
+// Returns the result in real number space.
 func DCT1D(signals []float64) ([]float64, error) {
+	if len(signals) == 0 {
+		return make([]float64,0), errors.New("DCT1D: Input array must have size at least one")
+	}
+	if bits.OnesCount32(uint32(len(signals))) != 1 {
+		return make([]float64,0),  errors.New("DCT1D: Input array must have size a power of two")
+	}
+
 	N := len(signals)
 	y := make([]complex128, N)
 	for i := 0; i < N/2; i++ {
@@ -30,7 +40,17 @@ func DCT1D(signals []float64) ([]float64, error) {
 	return result, err
 }
 
+// DCTInverse1D computes the inverse discrete cosine transform of the given array in the complex number space.
+// Assumes the length of the array is a power of 2
+// Returns the result in complex number space.
 func DCTInverse1D(signals []float64) ([]float64, error) {
+	if len(signals) == 0 {
+		return make([]float64,0), errors.New("DCTInverse1D: Input array must have size at least one")
+	}
+	if bits.OnesCount32(uint32(len(signals))) != 1 {
+		return make([]float64,0),  errors.New("DCTInverse1D: Input array must have size a power of two")
+	}
+
 	N := len(signals)
 	complexSignals := make([]complex128, len(signals))
 	for n := 0; n < N; n++ {
@@ -48,11 +68,21 @@ func DCTInverse1D(signals []float64) ([]float64, error) {
 	return result, err
 }
 
-//
-//func DCT2D(signals [][]float64) ([][]float64, error) {
-//	return make([][]float64, len(signals)), nil
-//}
-//
-//func DCTInverse2D(signals [][]float64) ([][]float64, error) {
-//	return make([][]float64, len(signals)), nil
-//}
+// DCT2D computes the discrete cosine transform of the given 2d-array in the complex number space.
+// Assumes the dimensions of the array is a power of 2
+// Returns the result in complex number space.
+func DCT2D(signals [][]float64) ([][]float64, error) {
+	return dct2D(signals, true)
+}
+
+// DCTInverse2D computes the inverse discrete cosine transform of the given 2d-array in the complex number space.
+// Assumes the dimensions of the array is a power of 2
+// Returns the result in complex number space.
+func DCTInverse2D(signals [][]float64) ([][]float64, error) {
+	transposedSignals := transposeReal(signals)
+	result, err := dct2D(transposedSignals, false)
+	result = transposeReal(result)
+	return result, err
+}
+
+

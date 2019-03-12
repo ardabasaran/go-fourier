@@ -6,12 +6,11 @@ import (
 	"math/bits"
 )
 
-const N_WORKERS = 8
-
 // DFT2Radix1D computes the discrete fourier transform of the given array in the complex number space.
 // The calculation is done in place using Cooley-Tukey radix-2 algorithm.
+// The result is stored in the given array.
 // Assumes the length of the array is a power of 2
-// Returns the result in complex number space.
+// Calculates the result in complex number space.
 func DFT2Radix1D(signals []complex128) error {
 	if len(signals) == 0 {
 		return errors.New("DFT2Radix1D: Input array must have size at least one")
@@ -53,8 +52,9 @@ func DFT2Radix1D(signals []complex128) error {
 
 // DFTInverse2Radix1D computes the inverse discrete fourier transform of the given array in the complex number space.
 // The calculation is done in place using Cooley-Tukey radix-2 algorithm.
+// The result is stored in the given array.
 // Assumes the length of the array is a power of 2
-// Returns the result in complex number space.
+// Calculates the result in complex number space.
 func DFTInverse2Radix1D(signals []complex128) error {
 	if len(signals) == 0 {
 		return errors.New("DFT2Radix1D: Input array must have size at least one")
@@ -74,13 +74,17 @@ func DFTInverse2Radix1D(signals []complex128) error {
 }
 
 // DFT2Radix2D computes the discrete fourier transform of the given 2d-array in the complex number space.
-// Returns the result in complex number space.
+// The result is stored in the given array.
+// Assumes the dimensions of the array is a power of 2
+// Calculates the result in complex number space.
 func DFT2Radix2D(signals [][]complex128) error {
 	return dft2D(signals, true, "radix2")
 }
 
 // DFTInverse2Radix2D computes the inverse discrete fourier transform of the given 2d-array in the complex number space.
-// Returns the result in complex number space.
+// The result is stored in the given array.
+// Assumes the dimensions of the array is a power of 2
+// Calculates the result in complex number space.
 func DFTInverse2Radix2D(signals [][]complex128) error {
 	transposedSignals := transposeComplex(signals)
 	err := dft2D(transposedSignals, false, "radix2")
@@ -94,7 +98,8 @@ func DFTInverse2Radix2D(signals [][]complex128) error {
 }
 
 // DFTNaive1D computes the discrete fourier transform of the given array in the complex number space.
-// Returns the result in complex number space.
+// The result is stored in the given array.
+// Calculates the result in complex number space.
 func DFTNaive1D(signals []complex128) error {
 	if len(signals) == 0 {
 		return errors.New("DFTNaive1D: Input array must have size at least one")
@@ -115,7 +120,8 @@ func DFTNaive1D(signals []complex128) error {
 }
 
 // DFTInverseNaive1D computes the inverse discrete fourier transform of the given array in the complex number space.
-// Returns the result in complex number space.
+// The result is stored in the given array.
+// Calculates the result in complex number space.
 func DFTInverseNaive1D(signals []complex128) error {
 	if len(signals) == 0 {
 		return errors.New("DFTInverseNaive1D: Input array must have size at least one")
@@ -136,13 +142,15 @@ func DFTInverseNaive1D(signals []complex128) error {
 }
 
 // DFTNaive2D computes the discrete fourier transform of the given 2d-array in the complex number space.
-// Returns the result in complex number space.
+// The result is stored in the given array.
+// Calculates the result in complex number space.
 func DFTNaive2D(signals [][]complex128) error {
 	return dft2D(signals, true, "naive")
 }
 
 // DFTInverseNaive2D computes the inverse discrete fourier transform of the given 2d-array in the complex number space.
-// Returns the result in complex number space.
+// The result is stored in the given array.
+// Calculates the result in complex number space.
 func DFTInverseNaive2D(signals [][]complex128) error {
 	return dft2D(signals , false, "naive")
 }
@@ -174,6 +182,7 @@ func DFTInverse2Radix1DReal(signals []complex128) ([]float64, error) {
 }
 
 // DFTNaive2DReal computes the discrete fourier transform of the given 2d-array in the real number space.
+// Assumes the dimensions of the array is a power of 2
 // Returns the result in complex number space.
 func DFT2Radix2DReal(signals [][]float64) ([][]complex128, error) {
 	complexSignals := make([][]complex128, len(signals))
@@ -188,6 +197,7 @@ func DFT2Radix2DReal(signals [][]float64) ([][]complex128, error) {
 }
 
 // DFTInverse2Radix2DReal computes the inverse discrete fourier transform of the given 2d-array in the complex number space.
+// Assumes the dimensions of the array is a power of 2
 // Returns the result in real number space.
 func DFTInverse2Radix2DReal(signals [][]complex128) ([][]float64, error) {
 	copySignals := make([][]complex128, len(signals))
@@ -265,113 +275,4 @@ func DFTInverseNaive2DReal(signals [][]complex128) ([][]float64, error) {
 		}
 	}
 	return realSignals, err
-}
-
-func dftWorker(rows <-chan int, jobReturns chan<- bool, signals [][]complex128,
-	N int, forward bool, algorithm string) {
-	for i := range rows {
-		if forward {
-			switch algorithm {
-			case "radix2":
-				DFT2Radix1D(signals[i])
-			default:
-				DFTNaive1D(signals[i])
-			}
-
-		} else {
-			switch algorithm {
-			case "radix2":
-				DFTInverse2Radix1D(signals[i])
-			default:
-				DFTInverseNaive1D(signals[i])
-			}
-		}
-		jobReturns <- true
-	}
-}
-
-func dft2D(signals [][]complex128, forward bool, algorithm string) error {
-	var err error
-	height := len(signals)
-	// check that input has at least one row
-	if height == 0 {
-		return errors.New("dft2D: Input 2d-array must have at least one row")
-	}
-
-	width := len(signals[0])
-	// check that input has at least one column
-	if width == 0 {
-		return errors.New("dft2D: Input 2d-array must have at least one column")
-	}
-
-	// Apply DFT on rows as 1d arrays
-	rows := make(chan int, height)
-	jobReturns := make(chan bool, height)
-	for w := 0; w < N_WORKERS; w++ {
-		go dftWorker(rows, jobReturns, signals, width, forward, algorithm)
-	}
-
-	// Send rows channel each row
-	for i := 0; i < height; i++ {
-		rows <- i
-	}
-	close(rows)
-	// Wait on workers to complete
-	for i := 0; i < height; i++ {
-		<-jobReturns
-	}
-	close(jobReturns)
-
-	// Transpose the array
-	transpose := transposeComplex(signals)
-
-	// Apply DFT on columns as 1d arrays
-	columns := make(chan int, width)
-	jobReturns = make(chan bool, width)
-
-	for w := 0; w < N_WORKERS; w++ {
-		go dftWorker(columns, jobReturns, transpose, height, forward, algorithm)
-	}
-	// Send columns channel each column
-	for i := 0; i < width; i++ {
-		columns <- i
-	}
-	close(columns)
-	// Wait on workers to complete
-	for i := 0; i < width; i++ {
-		<-jobReturns
-	}
-	close(jobReturns)
-
-	transpose = transposeComplex(transpose)
-	if err != nil {
-		return err
-	}
-	for i := 0; i < height; i++ {
-		for j := 0; j < width; j++ {
-			signals[i][j] = transpose[i][j]
-		}
-	}
-	return nil
-}
-
-func transposeComplex(signals [][]complex128) [][]complex128 {
-	width := len(signals)
-
-	height := len(signals[0])
-
-	// create the result array
-	result := make([][]complex128, height)
-
-	for i := 0; i < height; i++ {
-		result[i] = make([]complex128, width)
-	}
-
-	for i := 0; i < height; i++ {
-		for j := 0; j < width; j++ {
-			result[i][j] = signals[j][i]
-		}
-	}
-
-	return result
 }
